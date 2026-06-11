@@ -598,42 +598,8 @@ function adjustLayoutForMobile() {
 }
 
 
-// --- Typewriter utility ---
-function typeText(el, text, speed = 35) {
-  return new Promise(resolve => {
-    let i = 0;
-    el.textContent = '';
-    const interval = setInterval(() => {
-      el.textContent += text[i];
-      i++;
-      if (i >= text.length) {
-        clearInterval(interval);
-        resolve();
-      }
-    }, speed);
-  });
-}
-
-function animateProgress(fillEl, labelEl, durationMs = 900) {
-  return new Promise(resolve => {
-    let pct = 0;
-    const steps = 60;
-    const stepTime = durationMs / steps;
-    const interval = setInterval(() => {
-      pct = Math.min(100, pct + (100 / steps));
-      const rounded = Math.round(pct);
-      fillEl.style.width = rounded + '%';
-      labelEl.textContent = rounded + '%';
-      if (rounded >= 100) {
-        clearInterval(interval);
-        resolve();
-      }
-    }, stepTime);
-  });
-}
-
 // --- Diagnostic Scan Mode Actions ---
-async function activateDiagnosticMode() {
+function activateDiagnosticMode() {
   if (isDiagnosticMode) return;
   isDiagnosticMode = true;
 
@@ -649,112 +615,49 @@ async function activateDiagnosticMode() {
     const targetCanY = window.innerWidth < 850 ? 1.2 : 0.6;
     const targetCanScale = window.innerWidth < 850 ? 0.48 : 0.72;
     const targetPodiumY = window.innerWidth < 850 ? -0.3 : -0.7;
-    gsap.to(canGroup.position, { x: 0, y: targetCanY, z: 0.5, duration: 1.0, ease: 'power3.out' });
-    gsap.to(canGroup.scale, { x: targetCanScale, y: targetCanScale, z: targetCanScale, duration: 1.0, ease: 'power3.out' });
-    gsap.to(podiumMesh.position, { y: targetPodiumY, duration: 1.0, ease: 'power3.out' });
-    gsap.to(podiumMesh.scale, { x: targetCanScale, y: targetCanScale, z: targetCanScale, duration: 1.0, ease: 'power3.out' });
+    gsap.to(canGroup.position, { x: 0, y: targetCanY, z: 0.5, duration: 0.8, ease: 'power3.out' });
+    gsap.to(canGroup.scale, { x: targetCanScale, y: targetCanScale, z: targetCanScale, duration: 0.8, ease: 'power3.out' });
+    gsap.to(podiumMesh.position, { y: targetPodiumY, duration: 0.8, ease: 'power3.out' });
+    gsap.to(podiumMesh.scale, { x: targetCanScale, y: targetCanScale, z: targetCanScale, duration: 0.8, ease: 'power3.out' });
   }
 
-  // Hide the scan header until boot is done
+  // Show scan header immediately
   const scanHeader = document.getElementById('scan-header');
   if (scanHeader) {
-    scanHeader.style.opacity = '0';
-    scanHeader.style.transform = 'translateY(-20px)';
+    gsap.fromTo(scanHeader,
+      { opacity: 0, y: -20 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: 'power3.out'
+      }
+    );
   }
 
-  // Boot Terminal lines
-  const line1 = document.getElementById('boot-line-1');
-  const line2 = document.getElementById('boot-line-2');
-  const line3 = document.getElementById('boot-line-3');
-  const progressWrap = document.getElementById('boot-progress-wrap');
-  const progressFill = document.getElementById('boot-progress-fill');
-  const progressLabel = document.getElementById('boot-progress-label');
-
-  // Reset boot terminal state
-  [line1, line2, line3, progressWrap].forEach(el => {
-    if (el) el.classList.add('boot-line-hidden');
-  });
-  if (progressFill) progressFill.style.width = '0%';
-  if (progressLabel) progressLabel.textContent = '0%';
-
-  if (line1) {
-    line1.classList.remove('boot-line-hidden');
-    const text1 = line1.querySelector('.boot-text');
-    if (text1) await typeText(text1, 'INITIALIZING_7UP_DIAGNOSTIC_SYSTEM...', 28);
-  }
-
-  await new Promise(r => setTimeout(r, 120));
-
-  if (isPlayingSound) createBubbleSound();
-
-  if (line2) {
-    line2.classList.remove('boot-line-hidden');
-    const text2 = line2.querySelector('.boot-text');
-    if (text2) await typeText(text2, 'LOADING CORE COMPONENTS: [MEMORY_ERASER | GRAVITY_LOCK | GERMANY_FILTER]', 18);
-  }
-
-  await new Promise(r => setTimeout(r, 80));
-
-  if (isPlayingSound) { createBubbleSound(); setTimeout(createBubbleSound, 60); }
-
-  if (line3) {
-    line3.classList.remove('boot-line-hidden');
-    const text3 = line3.querySelector('.boot-text');
-    if (text3) await typeText(text3, 'SCANNING INGREDIENTS... ', 22);
-  }
-
-  if (progressWrap) progressWrap.classList.remove('boot-line-hidden');
-  await animateProgress(progressFill, progressLabel, 850);
-
-  // Sound cascade on completion
-  if (isPlayingSound) {
-    for (let i = 0; i < 5; i++) setTimeout(createBubbleSound, i * 70);
-  }
-
-  await new Promise(r => setTimeout(r, 200));
-
-  // Hide boot terminal with a fade
-  const bootTerminal = document.getElementById('boot-terminal');
-  if (bootTerminal) {
-    gsap.to(bootTerminal, { opacity: 0, y: -15, duration: 0.45, ease: 'power2.in' });
-  }
-
-  // Show scan header
-  if (scanHeader) {
-    gsap.to(scanHeader, {
-      opacity: 1,
-      y: 0,
-      duration: 0.6,
-      ease: 'power3.out',
-      onStart: () => { scanHeader.style.transform = ''; scanHeader.style.transition = ''; }
-    });
-  }
-
-  await new Promise(r => setTimeout(r, 350));
-
-  // GSAP staggered card reveals with glitch animation
+  // GSAP staggered card reveals with gentle slide-in, no delays
   const cards = document.querySelectorAll('.diag-card');
   cards.forEach((card, i) => {
     const isLeft = card.closest('.left-diag') !== null;
-    const startX = isLeft ? -70 : 70;
-    const delay = 0.08 + i * 0.14;
+    const startX = isLeft ? -40 : 40;
+    const delay = i * 0.08; // small stagger for fluid entry
 
     gsap.fromTo(card,
-      { opacity: 0, x: startX, scaleX: 0.82, filter: 'blur(10px) brightness(2.5)' },
+      { opacity: 0, x: startX, scaleX: 0.95, filter: 'blur(5px)' },
       {
-        opacity: 1, x: 0, scaleX: 1, filter: 'blur(0px) brightness(1)',
-        duration: 0.65,
+        opacity: 1, x: 0, scaleX: 1, filter: 'blur(0px)',
+        duration: 0.5,
         delay: delay,
-        ease: 'power3.out',
+        ease: 'power2.out',
         onStart: () => {
           if (isPlayingSound) setTimeout(createBubbleSound, 0);
-          // Flash border on entry
+          // Subtle border flash on entry
           card.style.borderColor = 'var(--primary-green)';
-          card.style.boxShadow = '0 0 30px rgba(0,230,118,0.4), inset 0 0 20px rgba(0,230,118,0.1)';
+          card.style.boxShadow = '0 0 20px rgba(0,230,118,0.3)';
           setTimeout(() => {
             card.style.borderColor = '';
             card.style.boxShadow = '';
-          }, 600);
+          }, 400);
         }
       }
     );
@@ -773,24 +676,6 @@ function deactivateDiagnosticMode() {
     link.classList.toggle('active', link.getAttribute('href') === '#home');
   });
 
-  // Reset boot terminal for next entry
-  const bootTerminal = document.getElementById('boot-terminal');
-  if (bootTerminal) {
-    gsap.set(bootTerminal, { opacity: 0, y: 0 });
-    ['boot-line-1', 'boot-line-2', 'boot-line-3', 'boot-progress-wrap'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.add('boot-line-hidden');
-    });
-    ['boot-line-1', 'boot-line-2', 'boot-line-3'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { const t = el.querySelector('.boot-text'); if (t) t.textContent = ''; }
-    });
-    const fill = document.getElementById('boot-progress-fill');
-    const lbl = document.getElementById('boot-progress-label');
-    if (fill) fill.style.width = '0%';
-    if (lbl) lbl.textContent = '0%';
-  }
-
   // Reset scan header
   const scanHeader = document.getElementById('scan-header');
   if (scanHeader) {
@@ -801,8 +686,6 @@ function deactivateDiagnosticMode() {
   document.querySelectorAll('.diag-card').forEach(card => {
     gsap.set(card, { opacity: 0, x: 0, scaleX: 1, filter: 'none', clearProps: 'borderColor,boxShadow' });
   });
-
-
 
   // Smoothly return 3D can to normal dashboard position
   if (canGroup && podiumMesh) {

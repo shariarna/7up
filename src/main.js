@@ -914,19 +914,80 @@ function initAnimations() {
   }
 
   const buyBtn = document.getElementById('buy-btn');
+  const overlay  = document.getElementById('order-modal-overlay');
+  const step1    = document.getElementById('order-step-1');
+  const step2    = document.getElementById('order-step-2');
+  const nameInput   = document.getElementById('order-name');
+  const submitBtn   = document.getElementById('order-submit-btn');
+  const cancelBtn   = document.getElementById('order-cancel-btn');
+  const doneBtn     = document.getElementById('order-done-btn');
+  const successName = document.getElementById('order-success-name');
+
+  function openModal() {
+    step1.classList.remove('hidden');
+    step2.classList.add('hidden');
+    nameInput.value = '';
+    overlay.classList.add('active');
+    setTimeout(() => nameInput.focus(), 400);
+  }
+
+  function closeModal() {
+    overlay.classList.remove('active');
+  }
+
+  function submitOrder() {
+    const name = nameInput.value.trim();
+    if (!name) {
+      nameInput.style.borderColor = '#ff5252';
+      nameInput.style.boxShadow = '0 0 0 3px rgba(255,82,82,0.2)';
+      nameInput.placeholder = 'আপনার নাম দিতে হবে! 🙏';
+      nameInput.focus();
+      setTimeout(() => {
+        nameInput.style.borderColor = '';
+        nameInput.style.boxShadow = '';
+        nameInput.placeholder = 'যেমন: নেইমার জুনিয়র';
+      }, 1800);
+      return;
+    }
+    successName.textContent = `ধন্যবাদ, ${name}! আপনার অর্ডার পেয়েছি। ✅`;
+    step1.classList.add('hidden');
+    step2.classList.remove('hidden');
+    if (isPlayingSound) {
+      for (let i = 0; i < 8; i++) setTimeout(createBubbleSound, i * 70);
+    }
+  }
+
   if (buyBtn) {
     buyBtn.addEventListener('mouseenter', () => {
       gsap.to(hoverScaleMultiplier, { value: 1.15, duration: 0.4, ease: 'back.out(2)' });
       if (isPlayingSound) {
-        for (let i = 0; i < 6; i++) {
-          setTimeout(createBubbleSound, i * 60 + Math.random() * 30);
-        }
+        for (let i = 0; i < 6; i++) setTimeout(createBubbleSound, i * 60 + Math.random() * 30);
       }
     });
     buyBtn.addEventListener('mouseleave', () => {
       gsap.to(hoverScaleMultiplier, { value: 1.0, duration: 0.4, ease: 'power2.out' });
     });
+    buyBtn.addEventListener('click', openModal);
   }
+
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+  if (doneBtn)   doneBtn.addEventListener('click', closeModal);
+  if (submitBtn) submitBtn.addEventListener('click', submitOrder);
+
+  // Allow Enter key to submit
+  if (nameInput) {
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitOrder();
+    });
+  }
+
+  // Click outside to close
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+  }
+
 
   const soundBtn = document.getElementById('sound-btn');
   if (soundBtn) {

@@ -309,6 +309,55 @@
       </div>
     </div>
 
+    <!-- Order Modal -->
+    <div class="order-modal-overlay" id="order-modal-overlay">
+      <div class="order-modal" id="order-modal">
+
+        <!-- Step 1: Name Input -->
+        <div class="order-step" id="order-step-1">
+          <div class="order-modal-icon">🧃</div>
+          <h2 class="order-modal-title">আপনার অর্ডার দিন</h2>
+          <p class="order-modal-sub">৭আপ — ব্রাজিল ফ্যানদের অফিশিয়াল ড্রিংক</p>
+          <div class="order-input-group">
+            <label class="order-label" for="order-name">আপনার নাম লিখুন</label>
+            <input
+              type="text"
+              id="order-name"
+              class="order-input"
+              placeholder="যেমন: নেইমার জুনিয়র"
+              autocomplete="off"
+            />
+          </div>
+          <div class="order-price-display">
+            <span class="order-qty">১ × ২৫০ মিলি ক্যান</span>
+            <span class="order-total">$7.00</span>
+          </div>
+          <button class="btn-order-submit" id="order-submit-btn">
+            অর্ডার নিশ্চিত করুন
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+          <button class="btn-order-cancel" id="order-cancel-btn">বাতিল করুন</button>
+        </div>
+
+        <!-- Step 2: Success -->
+        <div class="order-step hidden" id="order-step-2">
+          <div class="order-success-ring">
+            <svg class="order-checkmark" viewBox="0 0 52 52">
+              <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+              <path class="checkmark-check" fill="none" d="M14 27l7 7 17-17"/>
+            </svg>
+          </div>
+          <h2 class="order-modal-title" style="color: var(--primary-green);">অর্ডার সম্পন্ন! 🎉</h2>
+          <p class="order-success-name" id="order-success-name"></p>
+          <p class="order-modal-sub">আপনার ৭আপ শীঘ্রই পৌঁছে যাবে।<br>৭-১ এর ব্যথা ভুলুন, চুমুক দিন! 🍋</p>
+          <button class="btn-order-submit" id="order-done-btn" style="margin-top: 20px;">
+            ঠিক আছে, ধন্যবাদ!
+          </button>
+        </div>
+
+      </div>
+    </div>
+
     <!-- Script loading -->
     <script type="module" src="/src/main.js"></script>
   </body>

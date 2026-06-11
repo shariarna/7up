@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seven Up - The Official Drink for Brazil Fans</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Stadium Backdrop with lighting -->
+    <div class="stadium-bg">
+      <div class="spotlight spotlight-left"></div>
+      <div class="spotlight spotlight-right"></div>
+    </div>
+
+    <!-- WebGL Canvas Container for Three.js -->
+    <div id="canvas-container"></div>
+
+    <!-- Header Navigation -->
+    <header class="header-hud">
+      <div class="logo-container">
+        <div class="logo-icon">7</div>
+        <div class="logo-text">SEVEN UP</div>
+      </div>
+      <nav class="nav-links" id="nav-links">
+        <a href="#home" class="nav-link active">Home</a>
+        <a href="#features" class="nav-link">Features</a>
+      </nav>
+    </header>
+
+
+    <!-- Main Content Grid -->
+    <main class="dashboard-grid">
+      
+      <!-- Left Panel: Recovery Kit Feature -->
+      <section class="dashboard-panel left-panel">
+        
+        <div class="glass-panel" id="kit-widget">
+          <div class="widget-header">
+            <span class="widget-title">Recovery Protocol</span>
+            <span class="widget-status"></span>
+          </div>
+          
+          <div class="kit-showcase">
+            <div class="kit-image-container">
+              <div class="kit-glow"></div>
+              <!-- Futuristic Brazil Custom Anti-Gravity Jersey SVG -->
+              <svg class="kit-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Shirt Body -->
+                <path d="M 20,25 L 30,10 L 40,15 L 45,22 L 55,22 L 60,15 L 70,10 L 80,25 L 75,40 L 70,38 L 70,75 L 30,75 L 30,38 L 25,40 Z" fill="#ffd600" stroke="#00e676" stroke-width="2.5" stroke-linejoin="round" />
+                <!-- Green collar and sleeve trim -->
+                <path d="M 40,15 A 10,10 0 0 0 60,15 L 55,22 A 5,5 0 0 1 45,22 Z" fill="#00e676" />
+                <path d="M 20,25 L 25,40 L 22,41 L 18,27 Z" fill="#00e676" />
+                <path d="M 80,25 L 75,40 L 78,41 L 82,27 Z" fill="#00e676" />
+                <!-- Brazil Flag-like emblem circle in center -->
+                <circle cx="50" cy="45" r="9" fill="#002244" stroke="#ffffff" stroke-width="1" />
+                <path d="M 41,45 Q 50,42 59,45 Q 50,48 41,45 Z" fill="#ffffff" />
+                <!-- Subtle tech gridlines representing high-end jersey -->
+                <line x1="30" y1="55" x2="70" y2="55" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+                <line x1="30" y1="65" x2="70" y2="65" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+              </svg>
+            </div>
+            
+            <h3 class="kit-title">Anti-Gravity Recovery Kit</h3>
+            <p class="kit-desc">Engineered for supporters who dive under pressure. Keeps your hope afloat even when your defense crumbles.</p>
+            <button class="btn-hud-small" style="width: 100%; border-color: var(--yellow-glow); color: var(--yellow-glow);">Add to Recovery Kit</button>
+          </div>
+        </div>
+
+        <div class="glass-panel" id="warning-widget">
+          <div class="widget-header">
+            <span class="widget-title">Disclaimer</span>
+            <span class="widget-status" style="background: #ff5252; box-shadow: 0 0 8px #ff5252;"></span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+            Drinking Seven Up does not rewrite history, refund ticket prices from the 2014 semi-finals, or guarantee Neymar will stay on his feet. Side effects include sudden nostalgia, fits of nervous laughter, and chronic German football PTSD.
+          </p>
+        </div>
+
+      </section>
+
+      <!-- Center Hero: Title & CTA -->
+      <section class="center-hero">
+        <div class="center-hero-spacer" style="flex-grow: 1; min-height: 20px; pointer-events: none;"></div>
+        <div class="hero-text-wrap">
+          <div class="hero-tagline">Est. July 8, 2014</div>
+          <h1 class="hero-main-title">Seven Up: The Official Drink<br>for Brazil Fans</h1>
+          <p class="hero-sub">Heal the 7-1 pain, one refreshing carbonated sip at a time. The carbonation matches the bubble of your dreams.</p>
+        </div>
+
+        <div class="cta-container">
+          <button class="btn-3d-cta" id="buy-btn">
+            Buy Now <span class="price-tag">$7.00</span>
+          </button>
+          <div class="cta-warning">*Price matches the goals conceded (7). 100% inflation-proof since 2014.</div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Ticker and Banter -->
+      <section class="dashboard-panel right-panel">
+        
+        <div class="glass-panel" id="countdown-widget">
+          <div class="widget-header">
+            <span class="widget-title">Next Trophy Status</span>
+            <span class="widget-status loading"></span>
+          </div>
+          
+          <div class="loading-box">
+            <div class="loading-status-text">TROPHY LOADING...</div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill"></div>
+            </div>
+            <div class="loading-sub">(Estimated wait time: 24+ Years. Please remain calm.)</div>
+          </div>
+        </div>
+
+        <div class="glass-panel" id="stats-widget">
+          <div class="widget-header">
+            <span class="widget-title">Banter Analytics</span>
+            <span class="widget-status"></span>
+          </div>
+          
+          <div class="banter-stats">
+            <div class="banter-stat-row">
+              <span class="banter-stat-label">World Cup Wins since 2002</span>
+              <span class="banter-stat-val zero">0</span>
+            </div>
+            <div class="banter-stat-row">
+              <span class="banter-stat-label">Goals conceded in 6 mins (2014)</span>
+              <span class="banter-stat-val" style="color: #ff5252;">4</span>
+            </div>
+            <div class="banter-stat-row">
+              <span class="banter-stat-label">Cans of 7-Up to heal ego</span>
+              <span class="banter-stat-val">7,000,000+</span>
+            </div>
+            <div class="banter-stat-row">
+              <span class="banter-stat-label">Neymar Rolls (Total)</span>
+              <span class="banter-stat-val" style="color: var(--yellow-glow)">∞</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-panel" id="trivia-widget">
+          <div class="widget-header">
+            <span class="widget-title">Historical Fact</span>
+            <span class="widget-status"></span>
+          </div>
+          <div class="trivia-box">
+            "Did you know? In 2014, Germany scored more goals in Belo Horizonte than Brazil did in their entire knockout run. Coincidentally, Seven Up saw a 700% sales spike among German fans that evening."
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+
+    <!-- Bottom Marquee Ticker -->
+    <footer class="ticker-footer">
+      <div class="ticker-wrap">
+        <div class="ticker-item">
+          ⚽ BREAKING NEWS: <span class="highlight">Brazil fans spotted drinking green soda to forget the past</span>
+        </div>
+        <div class="ticker-item">
+          ⚠️ WARNING: <span class="alert">Do not mention Germany in the presence of this product</span>
+        </div>
+        <div class="ticker-item">
+          ✨ PRODUCT UPDATE: <span class="highlight">Each can contains exactly 7% hope and 1% reality</span>
+        </div>
+        <div class="ticker-item">
+          📈 STATS: <span class="highlight">Neymar has rolled another 300 meters while you read this</span>
+        </div>
+        <!-- Duplicate for loop seamless transition -->
+        <div class="ticker-item">
+          ⚽ BREAKING NEWS: <span class="highlight">Brazil fans spotted drinking green soda to forget the past</span>
+        </div>
+        <div class="ticker-item">
+          ⚠️ WARNING: <span class="alert">Do not mention Germany in the presence of this product</span>
+        </div>
+        <div class="ticker-item">
+          ✨ PRODUCT UPDATE: <span class="highlight">Each can contains exactly 7% hope and 1% reality</span>
+        </div>
+        <div class="ticker-item">
+          📈 STATS: <span class="highlight">Neymar has rolled another 300 meters while you read this</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Audio toggle (ambient bubble sound effects / stadium crowd hiss) -->
+    <div class="sound-toggle-container">
+      <button class="btn-sound-hud" id="sound-btn" title="Toggle Bubbling Sound">
+        <!-- Sound SVG icon -->
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Features Diagnostic Section -->
+    <section class="features-section" id="features">
+      <div class="scan-line"></div>
+
+      <!-- Boot Terminal Sequence -->
+      <div class="boot-terminal" id="boot-terminal">
+        <div class="boot-line" id="boot-line-1"><span class="boot-prompt">&gt;</span> <span class="boot-text"></span><span class="boot-cursor">█</span></div>
+        <div class="boot-line boot-line-hidden" id="boot-line-2"><span class="boot-prompt">&gt;</span> <span class="boot-text"></span><span class="boot-cursor">█</span></div>
+        <div class="boot-line boot-line-hidden" id="boot-line-3"><span class="boot-prompt">&gt;</span> <span class="boot-text"></span><span class="boot-cursor">█</span></div>
+        <div class="boot-progress-wrap boot-line-hidden" id="boot-progress-wrap">
+          <div class="boot-progress-bar"><div class="boot-progress-fill" id="boot-progress-fill"></div></div>
+          <span class="boot-progress-label" id="boot-progress-label">0%</span>
+        </div>
+      </div>
+
+      <div class="scan-header" id="scan-header">
+        <div class="scan-title">সিস্টেম ডায়াগনস্টিক: মূল উপাদানসমূহ</div>
+        <div class="scan-subtitle">আইডি: সেভেনআপ-২৫০মিলি-হীলার</div>
+      </div>
+      
+      <!-- Diagnostic Cards -->
+      <div class="diagnostic-cards-container">
+        <!-- Left Side Cards -->
+        <div class="diag-column left-diag">
+          <div class="diag-card" data-index="1">
+            <div class="diag-card-header">
+              <span class="diag-num">০১</span>
+              <span class="diag-label">স্মৃতি বিলোপক</span>
+            </div>
+            <div class="diag-card-body">
+              ৮ জুলাই, ২০১৪-এর সেই ৭-১ পরাজয়ের সকল কষ্টদায়ক স্মৃতি এবং জার্মানির পতাকার ছবি মন থেকে সম্পূর্ণ মুছে ফেলে।
+            </div>
+            <div class="diag-card-footer">
+              অবস্থা: <span class="status-ok">কাজ সম্পন্ন ৯৯.৮%</span>
+            </div>
+          </div>
+          
+          <div class="diag-card" data-index="2">
+            <div class="diag-card-header">
+              <span class="diag-num">০২</span>
+              <span class="diag-label">ভারসাম্য রক্ষক</span>
+            </div>
+            <div class="diag-card-body">
+              ৭.১ গুণ বেশি শক্তিশালী গ্র্যাভিটি লক ফর্মুলা। মাঠের মধ্যে হঠাৎ পড়ে যাওয়া বা গড়াগড়ি খাওয়া প্রতিরোধ করে।
+            </div>
+            <div class="diag-card-footer">
+              অবস্থা: <span class="status-ok">গড়াগড়ি বন্ধ ১০০%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side Cards -->
+        <div class="diag-column right-diag">
+          <div class="diag-card" data-index="3">
+            <div class="diag-card-header">
+              <span class="diag-num">০৩</span>
+              <span class="diag-label">জার্মানি ফিল্টার</span>
+            </div>
+            <div class="diag-card-body">
+              "মুলার", "ক্লোসা", "ক্রুস" কিংবা "বেলো হরিজন্তে" শব্দগুলো শোনার সাথে সাথে কানের শ্রবণশক্তি সাময়িক বন্ধ করে দেয়।
+            </div>
+            <div class="diag-card-footer">
+              অবস্থা: <span class="status-warning">ফিল্টার সক্রিয়</span>
+            </div>
+          </div>
+          
+          <div class="diag-card" data-index="4">
+            <div class="diag-card-header">
+              <span class="diag-num">০৪</span>
+              <span class="diag-label">আশার বুদবুদ</span>
+            </div>
+            <div class="diag-card-body">
+              প্রতি চুমুকে ৭% আশা এবং ১% বাস্তবতার মিশ্রণ ঘটায়। আগামী ২৪ বছর বিশ্বকাপ জয়ের স্বপ্ন দেখতে সাহায্য করবে।
+            </div>
+            <div class="diag-card-footer">
+              অবস্থা: <span class="status-ok">স্বপ্ন লোডিং চলছে</span>
+            </div>
+          </div>
+
+          <div class="diag-card" data-index="5">
+            <div class="diag-card-header">
+              <span class="diag-num">০৫</span>
+              <span class="diag-label">অশ্রু প্রতিরোধক</span>
+            </div>
+            <div class="diag-card-body">
+              বিশেষ ক্ষারীয় উপাদান যা চোখের নোনা জল শুষে নেয় এবং হলুদ জার্সিতে নোনা জলের দাগ লাগা থেকে রক্ষা করে।
+            </div>
+            <div class="diag-card-footer">
+              অবস্থা: <span class="status-ok">জার্সি সম্পূর্ণ নিরাপদ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Diagnostic laser pointer lines overlaying -->
+      <svg class="scan-svg" id="scan-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+        <path class="scan-path" id="path-1" d=""></path>
+        <path class="scan-path" id="path-2" d=""></path>
+        <path class="scan-path" id="path-3" d=""></path>
+        <path class="scan-path" id="path-4" d=""></path>
+        <path class="scan-path" id="path-5" d=""></path>
+      </svg>
+
+      <button class="btn-hud-small close-scan-btn" id="close-scan-btn">ডায়াগনস্টিক মোড বন্ধ করুন</button>
+    </section>
+
+    <!-- Floating Developer HUD Badge -->
+    <div class="dev-hud-widget">
+      <div class="dev-hud-header">
+        <span class="dev-hud-tag">ARCHITECT</span>
+        <span class="dev-hud-status">SYS_OK</span>
+      </div>
+      <div class="dev-hud-body">
+        <div class="dev-hud-name">Zaim Rohan</div>
+        <a href="https://www.facebook.com/search/top?q=Zaim%20Rohan" target="_blank" class="dev-hud-link" title="Zaim Rohan on Facebook">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Script loading -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

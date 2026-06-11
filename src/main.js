@@ -20,6 +20,20 @@ let rotationVelocityY = 0;
 let autoRotate = true;
 let autoRotateTimeout = null;
 
+// --- Scroll-stop Snap Variables ---
+// FRONT_FACE_ANGLE = Math.PI because Three.js CylinderGeometry maps
+// u=0 of the texture to the +Z face (toward camera). Our label is
+// centered at u=0.5 which maps to the -Z face. Rotating by PI
+// brings it to face the camera perfectly.
+const FRONT_FACE_ANGLE = Math.PI;
+let lastScrollY = 0;
+let scrollMoveTimeout = null;
+let isScrolling = false;
+let snapTargetY = null;
+
+// --- Startup guard: prevents diagnostic mode firing during page load ---
+let startupComplete = false;
+
 // --- Diagnostic Mode State ---
 let isDiagnosticMode = false;
 let diagnosticTriggered = false;
@@ -134,34 +148,39 @@ function initThree() {
 
 // --- Lights ---
 function setupLights() {
-  // Ambient
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+  // Ambient — moderate fill so edges stay dark like the photo
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
   scene.add(ambientLight);
 
-  // Main directional light (simulating high-end stadium spotlight)
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
+  // Main directional (stadium key light)
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.6);
   dirLight.position.set(5, 8, 5);
   scene.add(dirLight);
 
-  // Secondary soft fill light (yellowish tint)
-  const fillLight = new THREE.DirectionalLight(0xffd600, 0.7);
+  // Warm yellow-green side fill
+  const fillLight = new THREE.DirectionalLight(0xb8ffd0, 0.5);
   fillLight.position.set(-5, 3, 2);
   scene.add(fillLight);
 
-  // Backlight for edge shine
-  const rimLight = new THREE.DirectionalLight(0x00e676, 2.5);
+  // Backlight for subtle rim glow
+  const rimLight = new THREE.DirectionalLight(0x00c060, 1.2);
   rimLight.position.set(0, 2, -5);
   scene.add(rimLight);
 
-  // Glowing point light at the can base
-  const pointLight = new THREE.PointLight(0x00e676, 3, 8);
+  // Base point light
+  const pointLight = new THREE.PointLight(0x00cc66, 2.0, 10);
   pointLight.position.set(0, -2, 1);
   scene.add(pointLight);
 
-  // Dedicated front light for highlighting the logo clearly
-  const frontLight = new THREE.DirectionalLight(0xffffff, 2.2);
-  frontLight.position.set(0, 0, 8);
+  // Front light — strong enough to see logo, not so strong it bleaches
+  const frontLight = new THREE.DirectionalLight(0xffffff, 1.8);
+  frontLight.position.set(0, 0, 10);
   scene.add(frontLight);
+
+  // Gentle top fill
+  const topFill = new THREE.DirectionalLight(0xffffff, 0.6);
+  topFill.position.set(0, 10, 2);
+  scene.add(topFill);
 }
 
 // --- Build Podium ---
@@ -215,12 +234,15 @@ function buildCan() {
   labelTexture.wrapS = THREE.ClampToEdgeWrapping;
   labelTexture.wrapT = THREE.ClampToEdgeWrapping;
   
-  // Can body material
+  // Can body material — lower metalness so the vibrant green texture shines through,
+  // add a subtle green emissive so dark areas never look black.
   const bodyMaterial = new THREE.MeshStandardMaterial({
     map: labelTexture,
-    roughness: 0.12,
-    metalness: 0.85,
-    bumpScale: 0.05
+    roughness: 0.25,
+    metalness: 0.4,
+    emissive: new THREE.Color(0x041008),
+    emissiveIntensity: 0.2,
+    bumpScale: 0.03
   });
 
   // Metallic rim material (chrome/silver)
@@ -230,28 +252,31 @@ function buildCan() {
     metalness: 0.95
   });
 
-  // Can Cylinder Geometry
-  const bodyGeo = new THREE.CylinderGeometry(1.2, 1.2, 3.8, 64, 1, true);
+  // Can Cylinder Geometry — slightly shorter and thicker per user request
+  const CAN_R = 1.08;  // radius — thicker
+  const CAN_H = 4.7;   // height — a bit shorter
+  const bodyGeo = new THREE.CylinderGeometry(CAN_R, CAN_R, CAN_H, 64, 1, true);
   canBody = new THREE.Mesh(bodyGeo, bodyMaterial);
   canBody.position.y = 0;
   canGroup.add(canBody);
 
   // Top Cap / Rim
-  const topRimGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.1, 64);
+  const topRimGeo = new THREE.CylinderGeometry(CAN_R, CAN_R, 0.1, 64);
   const topRim = new THREE.Mesh(topRimGeo, rimMaterial);
-  topRim.position.y = 1.95;
+  topRim.position.y = CAN_H / 2 + 0.05;
   canGroup.add(topRim);
 
-  const topInnerGeo = new THREE.CylinderGeometry(1.1, 1.1, 0.05, 64);
+  const topInnerGeo = new THREE.CylinderGeometry(CAN_R * 0.86, CAN_R * 0.86, 0.06, 64);
   const topInner = new THREE.Mesh(topInnerGeo, rimMaterial);
-  topInner.position.y = 1.98;
+  topInner.position.y = CAN_H / 2 + 0.1;
   canGroup.add(topInner);
 
-  // Bottom Cap / Rim
-  const bottomRimGeo = new THREE.CylinderGeometry(1.15, 1.2, 0.15, 64);
+  // Bottom Cap / Rim — slightly thicker plate
+  const bottomRimGeo = new THREE.CylinderGeometry(CAN_R * 0.98, CAN_R, 0.18, 64);
   const bottomRim = new THREE.Mesh(bottomRimGeo, rimMaterial);
-  bottomRim.position.y = -1.95;
+  bottomRim.position.y = -(CAN_H / 2) - 0.07;
   canGroup.add(bottomRim);
+
 
   // Add water droplets for hyper-realistic condensation
   const dropletCount = 120;
@@ -268,9 +293,9 @@ function buildCan() {
   for (let i = 0; i < dropletCount; i++) {
     // Distribute randomly around the cylinder surface
     const theta = Math.random() * Math.PI * 2;
-    const y = (Math.random() - 0.5) * 3.4; // leave rims clean
-    const radius = 1.205; // slightly larger than can radius
-    const dropletSize = 0.015 + Math.random() * 0.035;
+    const y = (Math.random() - 0.5) * (CAN_H - 0.5); // leave rims clean
+    const dropletRadius = CAN_R + 0.008; // slightly larger than can radius
+    const dropletSize = 0.012 + Math.random() * 0.028;
 
     // Make some droplets elongated (streaks)
     let dropletGeo;
@@ -286,9 +311,9 @@ function buildCan() {
     
     // Position
     droplet.position.set(
-      radius * Math.cos(theta),
+      dropletRadius * Math.cos(theta),
       y,
-      radius * Math.sin(theta)
+      dropletRadius * Math.sin(theta)
     );
 
     // Rotate droplet to align with cylinder normal
@@ -298,13 +323,26 @@ function buildCan() {
     droplets.push(droplet);
   }
 
-  // Set initial position & rotation
-  canGroup.position.set(0, 1.8, 0);
-  canGroup.rotation.set(0.1, 0.4, 0.05);
+  // Start with label facing the camera (rotation.y = Math.PI)
+  canGroup.position.set(0, 1.2, 0);
+  canGroup.rotation.set(0.05, Math.PI, 0.02);
+}
+
+// --- Snap Helper ---
+// Returns the nearest angle (in radians) that is equivalent to FRONT_FACE_ANGLE
+// modulo 2*PI, measured from currentAngle, so the rotation always takes the
+// shortest possible arc back to the label-facing position.
+function _nearestFrontAngle(currentAngle) {
+  const TWO_PI = Math.PI * 2;
+  // How far currentAngle is past the front angle (in full rotations)
+  const delta = currentAngle - FRONT_FACE_ANGLE;
+  const fullRotations = Math.round(delta / TWO_PI);
+  return FRONT_FACE_ANGLE + fullRotations * TWO_PI;
 }
 
 // --- Pointer/Touch Drag Handlers ---
 function onPointerDown(event) {
+
   // Only start drag if clicking the canvas container or empty space, not widgets/buttons
   const targetTag = event.target.tagName.toLowerCase();
   if (targetTag === 'button' || targetTag === 'a' || event.target.closest('.glass-panel')) {
@@ -340,11 +378,11 @@ function onPointerMove(event) {
 function onPointerUp() {
   if (!isDragging) return;
   isDragging = false;
-  
-  // After 2.5 seconds of inactivity, gently resume auto rotation
+
+  // After the drag ends, snap the label back to the front once momentum fades
   autoRotateTimeout = setTimeout(() => {
-    autoRotate = true;
-  }, 2500);
+    snapTargetY = _nearestFrontAngle(canGroup.rotation.y);
+  }, 800);
 }
 
 // --- Build Fluid Splash ---
@@ -498,23 +536,23 @@ function getLayoutConfig() {
 
   if (isPhone) {
     return {
-      home: { canY: 2.2, canScale: 0.50, canZ: 0, podiumY: 0.5 },
-      features: { canY: 1.2, canScale: 0.42, canZ: 0.5, podiumY: -0.1 }
+      home:     { canY: 1.8, canScale: 0.42, canZ: 0, podiumY: 0.5 },
+      features: { canY: 0.8, canScale: 0.36, canZ: 0.5, podiumY: -0.1 }
     };
   } else if (isMobile) {
     return {
-      home: { canY: 2.0, canScale: 0.55, canZ: 0, podiumY: 0.4 },
-      features: { canY: 1.0, canScale: 0.48, canZ: 0.5, podiumY: -0.3 }
+      home:     { canY: 1.6, canScale: 0.46, canZ: 0, podiumY: 0.4 },
+      features: { canY: 0.6, canScale: 0.40, canZ: 0.5, podiumY: -0.3 }
     };
   } else if (w < 1100) {
     return {
-      home: { canY: 1.8, canScale: 0.50, canZ: 0, podiumY: 0.3 },
-      features: { canY: 0.6, canScale: 0.72, canZ: 0.5, podiumY: -0.7 }
+      home:     { canY: 1.2, canScale: 0.44, canZ: 0, podiumY: 0.3 },
+      features: { canY: 0.2, canScale: 0.60, canZ: 0.5, podiumY: -0.7 }
     };
   } else {
     return {
-      home: { canY: 1.8, canScale: 0.58, canZ: 0, podiumY: 0.4 },
-      features: { canY: 0.6, canScale: 0.72, canZ: 0.5, podiumY: -0.7 }
+      home:     { canY: 1.2, canScale: 0.50, canZ: 0, podiumY: 0.4 },
+      features: { canY: 0.2, canScale: 0.62, canZ: 0.5, podiumY: -0.7 }
     };
   }
 }
@@ -555,35 +593,58 @@ function updateThreeLayout(elapsedTime) {
 
   // Handle Rotation
   if (isDragging) {
-    // Rotation is updated directly in pointermove
+    // Rotation is updated directly in pointermove; clear any pending snap
+    snapTargetY = null;
   } else {
-    // Apply inertia friction
-    rotationVelocityY *= 0.95;
-    if (Math.abs(rotationVelocityY) < 0.0005) {
-      rotationVelocityY = 0;
+    // Detect scroll activity
+    const currentScrollY = window.scrollY;
+    if (currentScrollY !== lastScrollY) {
+      // User is scrolling — spin the can proportional to scroll delta
+      const scrollDelta = currentScrollY - lastScrollY;
+      canGroup.rotation.y += scrollDelta * 0.012;
+      lastScrollY = currentScrollY;
+      isScrolling = true;
+      snapTargetY = null; // cancel any ongoing snap
+
+      // After 350 ms of no scroll activity, queue a snap-to-front
+      clearTimeout(scrollMoveTimeout);
+      scrollMoveTimeout = setTimeout(() => {
+        isScrolling = false;
+        snapTargetY = _nearestFrontAngle(canGroup.rotation.y);
+      }, 350);
     }
+
+    // Apply inertia friction from drag
+    rotationVelocityY *= 0.92;
+    if (Math.abs(rotationVelocityY) < 0.0005) rotationVelocityY = 0;
     canGroup.rotation.y += rotationVelocityY;
 
-    // Smoothly blend in scroll-based target rotation
-    const targetScrollRotation = 0.4 + t * Math.PI * 1.5;
-    canGroup.rotation.y += (targetScrollRotation - canGroup.rotation.y) * 0.08;
-
-    // Gently auto rotate if idle
-    if (rotationVelocityY === 0 && autoRotate) {
-      canGroup.rotation.y += isDiagnosticMode ? 0.008 : 0.003;
+    if (snapTargetY !== null) {
+      // Smoothly ease toward the front-facing angle
+      const diff = snapTargetY - canGroup.rotation.y;
+      canGroup.rotation.y += diff * 0.06;
+      // Add a gentle alive wobble once nearly snapped
+      if (Math.abs(diff) < 0.01) {
+        canGroup.rotation.y = snapTargetY + Math.sin(elapsedTime * 1.2) * 0.025;
+      }
+    } else if (!isScrolling && rotationVelocityY === 0 && !isDragging) {
+      // Idle: very gentle wobble around current front position
+      canGroup.rotation.y += Math.sin(elapsedTime * 0.8) * 0.0004;
     }
   }
 
   // Slight tilt based on mouse vertical movement for depth
   canGroup.rotation.x = 0.1 - mouse.y * 0.15;
 
-  // Diagnostic trigger logic
-  if (t > 0.8 && !diagnosticTriggered) {
-    diagnosticTriggered = true;
-    activateDiagnosticMode();
-  } else if (t < 0.3 && diagnosticTriggered) {
-    diagnosticTriggered = false;
-    deactivateDiagnosticMode();
+  // Diagnostic trigger — only after startup is complete
+  if (startupComplete) {
+    if (t > 0.8 && !diagnosticTriggered) {
+      diagnosticTriggered = true;
+      activateDiagnosticMode();
+    } else if (t < 0.3 && diagnosticTriggered) {
+      diagnosticTriggered = false;
+      deactivateDiagnosticMode();
+    }
   }
 
   // Update navigation links highlight based on scroll position
@@ -893,6 +954,16 @@ function initAnimations() {
 
 // --- Run App ---
 document.addEventListener('DOMContentLoaded', () => {
+  // Prevent browser from restoring previous scroll position
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  window.scrollTo(0, 0);
+  lastScrollY = 0;
+
   initThree();
   initAnimations();
+
+  // Allow diagnostic mode only after page has fully settled
+  setTimeout(() => { startupComplete = true; }, 800);
 });

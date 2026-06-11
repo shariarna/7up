@@ -10,13 +10,23 @@ export function createSevenUpTextureCanvas() {
   canvas.height = 1024;
   const ctx = canvas.getContext('2d');
 
-  // Fill with a vibrant green base gradient representing the Seven Up bottle label
+  // Deep rich forest-green matching the real 7up can in the reference photo
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-  gradient.addColorStop(0, '#007032');
-  gradient.addColorStop(0.3, '#00a84c');
-  gradient.addColorStop(0.7, '#00c356');
-  gradient.addColorStop(1, '#007032');
+  gradient.addColorStop(0,    '#0c4a1a'); // very dark edge
+  gradient.addColorStop(0.22, '#166828'); // dark mid
+  gradient.addColorStop(0.5,  '#1e8530'); // centre — deepest vivid green, not lime
+  gradient.addColorStop(0.78, '#166828');
+  gradient.addColorStop(1,    '#0c4a1a');
   ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Subtle cylindrical gloss highlight — narrower and softer than before
+  const shineGrad = ctx.createLinearGradient(canvas.width * 0.32, 0, canvas.width * 0.66, 0);
+  shineGrad.addColorStop(0,    'rgba(255,255,255,0)');
+  shineGrad.addColorStop(0.42, 'rgba(255,255,255,0.13)');
+  shineGrad.addColorStop(0.58, 'rgba(255,255,255,0.13)');
+  shineGrad.addColorStop(1,    'rgba(255,255,255,0)');
+  ctx.fillStyle = shineGrad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Draw some yellow and green circular accents (lime/soda bubbles) on the label background
@@ -89,81 +99,76 @@ export function createSevenUpTextureCanvas() {
   ctx.fillText('লেমন-লাইম ফ্লেভারড কার্বোনেটেড বেভারেজ', canvas.width / 2, 230);
   ctx.restore();
 
-  // Draw the giant white "7"
+  // Draw the giant white "7" — positioned to fill the left half of label
   ctx.save();
-  ctx.translate(canvas.width / 2 - 80, canvas.height / 2 + 50);
-  ctx.skewX = -0.15; // Italicize slightly
+  ctx.translate(canvas.width / 2 - 55, canvas.height / 2 + 60);
 
   // Draw shadows/glow for "7"
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetX = 10;
-  ctx.shadowOffsetY = 10;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = 25;
+  ctx.shadowOffsetX = 8;
+  ctx.shadowOffsetY = 8;
 
-  // Let's draw the 7 path manually for a clean, stylized look
+  // Large bold "7" path
   ctx.beginPath();
   // Top bar of 7
-  ctx.moveTo(-180, -220);
-  ctx.lineTo(120, -220);
+  ctx.moveTo(-200, -260);
+  ctx.lineTo(130, -260);
   // Slanted leg
-  ctx.lineTo(-40, 260);
-  ctx.lineTo(-150, 260);
-  ctx.lineTo(0, -110);
-  ctx.lineTo(-180, -110);
+  ctx.lineTo(-35, 290);
+  ctx.lineTo(-155, 290);
+  ctx.lineTo(10, -130);
+  ctx.lineTo(-200, -130);
   ctx.closePath();
 
   ctx.fillStyle = '#ffffff';
   ctx.fill();
 
-  // Draw a dark green border/stroke around 7
+  // Dark green outline around "7"
   ctx.shadowBlur = 0;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
-  ctx.strokeStyle = '#004a20';
-  ctx.lineWidth = 14;
+  ctx.strokeStyle = '#0a3d18';
+  ctx.lineWidth = 16;
   ctx.stroke();
 
   ctx.restore();
 
-  // Draw the red "আপ" circle
+  // Draw the red "আপ" circle — overlapping the lower right of the "7"
   ctx.save();
-  // Position the circle overlapping the lower right part of the "7"
-  const circleX = canvas.width / 2 + 90;
-  const circleY = canvas.height / 2 + 90;
-  const circleRadius = 110;
+  const circleX = canvas.width / 2 + 105;
+  const circleY = canvas.height / 2 + 80;
+  const circleRadius = 125;
 
   // Red circle shadow
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-  ctx.shadowBlur = 15;
-  ctx.shadowOffsetX = 5;
-  ctx.shadowOffsetY = 5;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetX = 6;
+  ctx.shadowOffsetY = 6;
 
   ctx.beginPath();
   ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
-  ctx.fillStyle = '#e60012'; // Vibrant red
+  ctx.fillStyle = '#e60012';
   ctx.fill();
 
-  // White stroke for the red circle
+  // White stroke
   ctx.shadowBlur = 0;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 10;
+  ctx.lineWidth = 12;
   ctx.stroke();
 
-  // Draw "আপ" (up) in Bengali script inside the red circle
+  // "আপ" text inside the red circle
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 96px "Kalpurush", "SolaimanLipi", "Vrinda", "Space Grotesk", sans-serif';
+  ctx.font = 'bold 100px "Kalpurush", "SolaimanLipi", "Vrinda", "Space Grotesk", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  
-  // Custom shadow for "আপ" text
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-  ctx.shadowBlur = 5;
+  ctx.shadowColor = 'rgba(0,0,0,0.4)';
+  ctx.shadowBlur = 6;
   ctx.shadowOffsetX = 3;
   ctx.shadowOffsetY = 3;
-
-  ctx.fillText('আপ', circleX - 5, circleY - 5);
+  ctx.fillText('আপ', circleX - 4, circleY - 4);
   ctx.restore();
 
   // Add the banter subtext at the bottom of the can label
